@@ -5,21 +5,23 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reading...</title>
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-    
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
       background: linear-gradient(135deg, #c9e4de 0%, #f7d7dc 100%);
       font-family: 'Poppins', sans-serif;
-      margin: 0;
       color: #5d7772;
-      padding-bottom: 6rem;
+      margin: 0;
     }
-    
+
+    /* Desktop sidebar */
     .sidebar {
       position: fixed;
       left: 0;
@@ -30,12 +32,11 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       padding: 2rem 1rem;
       overflow-y: auto;
       box-shadow: 5px 0 20px rgba(0, 0, 0, 0.05);
+      z-index: 50;
     }
-    
-    .sidebar-header {
-      margin-bottom: 2rem;
-    }
-    
+
+    .sidebar-header { margin-bottom: 2rem; }
+
     .back-link {
       color: #87a8a4;
       text-decoration: none;
@@ -43,22 +44,21 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       margin-bottom: 1rem;
       font-weight: 600;
     }
-    
     .back-link:hover { text-decoration: underline; }
-    
+
     .book-title-sidebar {
       font-size: 1.2rem;
       font-weight: 700;
       color: #5d7772;
       margin-bottom: 0.5rem;
     }
-    
+
     .book-author-sidebar {
       font-size: 0.9rem;
       color: #d4a5ae;
       font-weight: 600;
     }
-    
+
     .chapter-link {
       display: block;
       padding: 0.75rem;
@@ -70,20 +70,21 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       background: #f8faf9;
       cursor: pointer;
     }
-    
+
     .chapter-link:hover {
       background: linear-gradient(135deg, #e8f5f3 0%, #fce9ed 100%);
     }
-    
+
     .chapter-link.active {
       background: linear-gradient(135deg, #87a8a4 0%, #e8b4bc 100%);
       color: white;
       font-weight: 600;
     }
-    
+
     .ch-num { font-weight: 600; margin-bottom: 0.2rem; }
     .ch-title { font-size: 0.85rem; opacity: 0.8; }
-    
+
+    /* Reader content */
     .content {
       margin-left: 300px;
       padding: 3rem;
@@ -92,26 +93,27 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       min-height: 100vh;
       box-shadow: -5px 0 20px rgba(0, 0, 0, 0.05);
     }
-    
+
     .content h1 {
       margin-bottom: 2rem;
       font-size: 2rem;
       color: #5d7772;
       line-height: 1.3;
     }
-    
+
+    /* Paragraph rendering */
     .chapter-text {
       white-space: normal;
       font-size: 1.1rem;
       color: #5d7772;
       margin-bottom: 3rem;
     }
-
     .chapter-text p {
       margin: 0 0 1.25rem 0;
       line-height: 1.8;
     }
-    
+
+    /* Prev/Next nav */
     .nav {
       display: flex;
       justify-content: space-between;
@@ -119,7 +121,7 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       border-top: 2px solid #e8f5f3;
       gap: 1rem;
     }
-    
+
     .nav button {
       padding: 0.75rem 1.5rem;
       border: none;
@@ -130,23 +132,24 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       font-family: 'Poppins', sans-serif;
       font-size: 1rem;
     }
-    
+
     .nav button:not(:disabled) {
       background: linear-gradient(135deg, #87a8a4 0%, #e8b4bc 100%);
       color: white;
     }
-    
+
     .nav button:not(:disabled):hover {
       transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(135, 168, 164, 0.3);
     }
-    
+
     .nav button:disabled {
       background: #e8f5f3;
       color: #b8d8d2;
       cursor: not-allowed;
     }
 
+    /* Loading */
     .loading {
       text-align: center;
       padding: 4rem;
@@ -163,77 +166,86 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       animation: spin 0.8s linear infinite;
       margin-bottom: 1rem;
     }
-    
+
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-decoration: none;
-      color: #87a8a4;
-      transition: all 0.3s ease;
-      padding: 0.5rem 2rem;
-      border-radius: 12px;
-    }
+    /* Drawer overlay (only used on mobile) */
+    .drawer-overlay { display: none; }
 
-    .nav-item:hover {
-      background: linear-gradient(135deg, #e8f5f3 0%, #fce9ed 100%);
-    }
-
-    .nav-item.active {
-      background: linear-gradient(135deg, #87a8a4 0%, #e8b4bc 100%);
-      color: white;
-    }
-
-    .nav-icon {
-      font-size: 1.5rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .nav-label {
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
+    /* Mobile: sidebar becomes a drawer */
     @media (max-width: 768px) {
-      .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-      }
       .content {
         margin-left: 0;
         padding: 2rem 1.5rem;
       }
+
+      .sidebar {
+        width: 85%;
+        max-width: 320px;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 200;
+
+        transform: translateX(-105%);
+        transition: transform 0.25s ease;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .drawer-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 150;
+
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+      }
+
+      .drawer-overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="sidebar">
+  <!-- Sidebar / Drawer -->
+  <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <a href="/" class="back-link">← Library</a>
       <div class="book-title-sidebar" id="bookTitle">Loading...</div>
       <div class="book-author-sidebar" id="bookAuthor"></div>
     </div>
-    
+
     <div id="chapterList">
       <div class="loading">
         <div class="spinner"></div>
       </div>
     </div>
   </div>
-  
-  <div class="content">
+
+  <!-- Mobile drawer overlay -->
+  <div id="drawerOverlay" class="drawer-overlay"></div>
+
+  <!-- Reading Content -->
+  <div class="content" id="readerContent">
     <div id="chapterContent">
       <div class="loading">
         <div class="spinner"></div>
         <p>Loading chapter...</p>
       </div>
     </div>
-    
+
     <div class="nav">
       <button id="prevBtn" onclick="prevChapter()" disabled>← Previous</button>
       <button id="nextBtn" onclick="nextChapter()" disabled>Next →</button>
@@ -242,16 +254,67 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
   <script type="module" define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY }}>
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-  
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let currentBook = null;
     let chapters = [];
     let currentChapterIndex = 0;
 
     const urlParams = new URLSearchParams(window.location.search);
     const bookId = urlParams.get('book');
     const chapterId = urlParams.get('chapter');
+
+    // Drawer elements
+    const sidebarEl = document.getElementById('sidebar');
+    const overlayEl = document.getElementById('drawerOverlay');
+    const readerEl = document.getElementById('readerContent');
+
+    function isMobile() {
+      return window.matchMedia('(max-width: 768px)').matches;
+    }
+
+    function openDrawer() {
+      if (!isMobile()) return;
+      sidebarEl.classList.add('open');
+      overlayEl.classList.add('show');
+    }
+
+    function closeDrawer() {
+      sidebarEl.classList.remove('open');
+      overlayEl.classList.remove('show');
+    }
+
+    function toggleDrawer() {
+      if (!isMobile()) return;
+      const isOpen = sidebarEl.classList.contains('open');
+      if (isOpen) closeDrawer();
+      else openDrawer();
+    }
+
+    overlayEl.addEventListener('click', closeDrawer);
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDrawer();
+    });
+
+    // Tap center of reading area to toggle drawer (mobile only)
+    readerEl.addEventListener('click', (e) => {
+      if (!isMobile()) return;
+
+      // avoid toggling when interacting with controls/links or selecting text
+      const interactive = e.target.closest('a, button, input, textarea, select, .chapter-link');
+      if (interactive) return;
+      if (window.getSelection && window.getSelection().toString()) return;
+
+      const rect = readerEl.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const w = rect.width;
+
+      // middle 60% band
+      if (x >= w * 0.2 && x <= w * 0.8) {
+        toggleDrawer();
+      }
+    });
 
     async function loadBook() {
       if (!bookId) {
@@ -260,7 +323,7 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       }
 
       try {
-        // Load book details
+        // Book details
         const { data: book, error: bookError } = await supabase
           .from('books')
           .select('*')
@@ -269,12 +332,11 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
         if (bookError) throw bookError;
 
-        currentBook = book;
         document.title = book.title;
         document.getElementById('bookTitle').textContent = book.title;
         document.getElementById('bookAuthor').textContent = `by ${book.author}`;
 
-        // Load chapters
+        // Chapters
         const { data: chaptersData, error: chaptersError } = await supabase
           .from('chapters')
           .select('*')
@@ -283,17 +345,16 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
         if (chaptersError) throw chaptersError;
 
-        chapters = chaptersData;
+        chapters = chaptersData ?? [];
 
-        // Find current chapter or default to first
+        // Find current chapter
         if (chapterId) {
-          currentChapterIndex = chapters.findIndex(ch => ch.id === chapterId);
-          if (currentChapterIndex === -1) currentChapterIndex = 0;
+          const idx = chapters.findIndex(ch => ch.id === chapterId);
+          currentChapterIndex = idx >= 0 ? idx : 0;
         }
 
         renderChapterList();
         renderChapter();
-
       } catch (err) {
         console.error('Error loading book:', err);
         document.getElementById('chapterContent').innerHTML = `
@@ -320,7 +381,7 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       if (!chapter) return;
 
       const container = document.getElementById('chapterContent');
-      container.innerHTML = ''; // clear
+      container.innerHTML = '';
 
       const h1 = document.createElement('h1');
       h1.textContent = `Chapter ${chapter.chapter_number}: ${chapter.title}`;
@@ -328,10 +389,10 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       const text = document.createElement('div');
       text.className = 'chapter-text';
 
-      const normalized = (chapter.content ?? "").replace(/\r\n/g, "\n");
+      const normalized = (chapter.content ?? '').replace(/\r\n/g, '\n');
 
       const paragraphs = normalized
-        .split(/\n\s*\n/)   // blank line = new paragraph
+        .split(/\n\s*\n/)
         .map(p => p.trim())
         .filter(Boolean);
 
@@ -348,8 +409,7 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       window.history.pushState({}, '', newUrl);
 
       document.getElementById('prevBtn').disabled = currentChapterIndex === 0;
-      document.getElementById('nextBtn').disabled =
-        currentChapterIndex === chapters.length - 1;
+      document.getElementById('nextBtn').disabled = currentChapterIndex === chapters.length - 1;
 
       renderChapterList();
       window.scrollTo(0, 0);
@@ -358,6 +418,7 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     function goToChapter(index) {
       currentChapterIndex = index;
       renderChapter();
+      closeDrawer(); // close drawer on selection (mobile)
     }
 
     function prevChapter() {
@@ -374,7 +435,7 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       }
     }
 
-    // Make functions global
+    // Make functions global for inline onclick handlers
     window.goToChapter = goToChapter;
     window.prevChapter = prevChapter;
     window.nextChapter = nextChapter;
