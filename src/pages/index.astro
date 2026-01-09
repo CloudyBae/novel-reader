@@ -1,0 +1,338 @@
+---
+// No server-side data fetching
+---
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Cozy Reading Corner</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #c9e4de 0%, #f7d7dc 100%);
+      font-family: 'Poppins', sans-serif;
+      padding: 2rem;
+      min-height: 100vh;
+      padding-bottom: 7rem;
+    }
+    
+    .container { max-width: 1400px; margin: 0 auto; }
+    
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeInDown 0.6s ease;
+    }
+    
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #87a8a4 0%, #e8b4bc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      color: #5d7772;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      animation: fadeIn 0.8s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .book-card {
+      background: white;
+      border-radius: 20px;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    
+    .book-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(135, 168, 164, 0.3);
+    }
+    
+    .book-cover {
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      position: relative;
+    }
+    
+    .book-emoji {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .book-info {
+      padding: 1.5rem;
+      background: white;
+    }
+    
+    .book-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+      color: #5d7772;
+    }
+    
+    .book-author {
+      color: #d4a5ae;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    
+    .book-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.9rem;
+      color: #87a8a4;
+      font-weight: 600;
+    }
+    
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: linear-gradient(135deg, #e8f5f3 0%, #fce9ed 100%);
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+    }
+    
+    .empty-state, .loading-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .empty-state h2, .loading-state h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: #87a8a4;
+    }
+    
+    .empty-state p, .loading-state p {
+      color: #d4a5ae;
+      font-size: 1.1rem;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      border: 4px solid #e8f5f3;
+      border-top-color: #87a8a4;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 1rem;
+      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #87a8a4;
+      transition: all 0.3s ease;
+      padding: 0.5rem 2rem;
+      border-radius: 12px;
+    }
+
+    .nav-item:hover {
+      background: linear-gradient(135deg, #e8f5f3 0%, #fce9ed 100%);
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, #87a8a4 0%, #e8b4bc 100%);
+      color: white;
+    }
+
+    .nav-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .nav-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      body { padding: 1rem; padding-bottom: 7rem; }
+      h1 { font-size: 2.2rem; }
+      .books-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>My Cozy Reading Corner</h1>
+      <p class="subtitle" id="bookCount">Loading your collection...</p>
+    </header>
+
+    <div id="booksContainer">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading your books...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/" class="nav-item active">
+      <span class="nav-icon">📚</span>
+      <span class="nav-label">Library</span>
+    </a>
+    <a href="/admin" class="nav-item">
+      <span class="nav-icon">✏️</span>
+      <span class="nav-label">Add Books</span>
+    </a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+    const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const gradients = [
+      'linear-gradient(135deg, #c9e4de 0%, #f7d7dc 100%)',
+      'linear-gradient(135deg, #b8d8d2 0%, #f4c2cd 100%)',
+      'linear-gradient(135deg, #a8cfc7 0%, #f0adb8 100%)',
+      'linear-gradient(135deg, #d4ebe6 0%, #fbe3e8 100%)',
+      'linear-gradient(135deg, #9fc5bd 0%, #ecaab6 100%)',
+      'linear-gradient(135deg, #c2dfd8 0%, #f6d0da 100%)',
+      'linear-gradient(135deg, #b3d4cc 0%, #f2bdc9 100%)',
+      'linear-gradient(135deg, #dceee9 0%, #fce7ed 100%)',
+    ];
+
+    const bookEmojis = ['📖', '📚', '💕', '🌸', '🦋', '🌷', '🎀', '💝', '🌺', '🧸'];
+
+    async function loadBooks() {
+      try {
+        const { data: books, error } = await supabase
+          .from('books')
+          .select(`
+            *,
+            chapters(id, chapter_number)
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const container = document.getElementById('booksContainer');
+        const countEl = document.getElementById('bookCount');
+
+        if (!books || books.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <h2>🌸 No books yet!</h2>
+              <p>Start building your collection by adding your first book!</p>
+            </div>
+          `;
+          countEl.textContent = '0 books in your collection';
+          return;
+        }
+
+        countEl.textContent = `${books.length} lovely ${books.length === 1 ? 'book' : 'books'} in your collection`;
+
+        container.innerHTML = `
+          <div class="books-grid">
+            ${books.map((book, index) => {
+              const chapterCount = book.chapters?.length || 0;
+              const firstChapterId = book.chapters?.[0]?.id || '';
+              const gradient = gradients[index % gradients.length];
+              const emoji = bookEmojis[index % bookEmojis.length];
+              
+              return `
+                <a href="/reader?book=${book.id}" class="book-card">
+                  <div class="book-cover" style="background: ${gradient}">
+                    <span class="book-emoji">${emoji}</span>
+                  </div>
+                  <div class="book-info">
+                    <div class="book-title">${book.title}</div>
+                    <div class="book-author">by ${book.author}</div>
+                    <div class="book-meta">
+                      <div class="meta-item">
+                        <span>📄</span>
+                        <span>${chapterCount} ${chapterCount === 1 ? 'chapter' : 'chapters'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              `;
+            }).join('')}
+          </div>
+        `;
+
+      } catch (err) {
+        console.error('Error loading books:', err);
+        document.getElementById('booksContainer').innerHTML = `
+          <div class="empty-state">
+            <h2>💔 Oops!</h2>
+            <p style="color: #e74c3c;">Error loading books: ${err.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    loadBooks();
+  </script>
+</body>
+</html>

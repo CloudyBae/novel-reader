@@ -1,0 +1,391 @@
+---
+// No server-side data fetching - all client-side
+---
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reading...</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #c9e4de 0%, #f7d7dc 100%);
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      color: #5d7772;
+      padding-bottom: 6rem;
+    }
+    
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: white;
+      padding: 2rem 1rem;
+      overflow-y: auto;
+      box-shadow: 5px 0 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .sidebar-header {
+      margin-bottom: 2rem;
+    }
+    
+    .back-link {
+      color: #87a8a4;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    
+    .back-link:hover { text-decoration: underline; }
+    
+    .book-title-sidebar {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #5d7772;
+      margin-bottom: 0.5rem;
+    }
+    
+    .book-author-sidebar {
+      font-size: 0.9rem;
+      color: #d4a5ae;
+      font-weight: 600;
+    }
+    
+    .chapter-link {
+      display: block;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      text-decoration: none;
+      color: #5d7772;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+      background: #f8faf9;
+      cursor: pointer;
+    }
+    
+    .chapter-link:hover {
+      background: linear-gradient(135deg, #e8f5f3 0%, #fce9ed 100%);
+    }
+    
+    .chapter-link.active {
+      background: linear-gradient(135deg, #87a8a4 0%, #e8b4bc 100%);
+      color: white;
+      font-weight: 600;
+    }
+    
+    .ch-num { font-weight: 600; margin-bottom: 0.2rem; }
+    .ch-title { font-size: 0.85rem; opacity: 0.8; }
+    
+    .content {
+      margin-left: 300px;
+      padding: 3rem;
+      max-width: 900px;
+      background: white;
+      min-height: 100vh;
+      box-shadow: -5px 0 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .content h1 {
+      margin-bottom: 2rem;
+      font-size: 2rem;
+      color: #5d7772;
+      line-height: 1.3;
+    }
+    
+    .chapter-text {
+      white-space: pre-wrap;
+      line-height: 1.8;
+      font-size: 1.1rem;
+      color: #5d7772;
+      margin-bottom: 3rem;
+    }
+    
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 2rem;
+      border-top: 2px solid #e8f5f3;
+      gap: 1rem;
+    }
+    
+    .nav button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+    }
+    
+    .nav button:not(:disabled) {
+      background: linear-gradient(135deg, #87a8a4 0%, #e8b4bc 100%);
+      color: white;
+    }
+    
+    .nav button:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(135, 168, 164, 0.3);
+    }
+    
+    .nav button:disabled {
+      background: #e8f5f3;
+      color: #b8d8d2;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 4rem;
+      color: #87a8a4;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      border: 4px solid #e8f5f3;
+      border-top-color: #87a8a4;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 1rem;
+      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #87a8a4;
+      transition: all 0.3s ease;
+      padding: 0.5rem 2rem;
+      border-radius: 12px;
+    }
+
+    .nav-item:hover {
+      background: linear-gradient(135deg, #e8f5f3 0%, #fce9ed 100%);
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, #87a8a4 0%, #e8b4bc 100%);
+      color: white;
+    }
+
+    .nav-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .nav-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+      .content {
+        margin-left: 0;
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <a href="/" class="back-link">← Library</a>
+      <div class="book-title-sidebar" id="bookTitle">Loading...</div>
+      <div class="book-author-sidebar" id="bookAuthor"></div>
+    </div>
+    
+    <div id="chapterList">
+      <div class="loading">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="content">
+    <div id="chapterContent">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading chapter...</p>
+      </div>
+    </div>
+    
+    <div class="nav">
+      <button id="prevBtn" onclick="prevChapter()" disabled>← Previous</button>
+      <button id="nextBtn" onclick="nextChapter()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/" class="nav-item">
+      <span class="nav-icon">📚</span>
+      <span class="nav-label">Library</span>
+    </a>
+    <a href="/admin" class="nav-item">
+      <span class="nav-icon">✏️</span>
+      <span class="nav-label">Add Books</span>
+    </a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+    const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentBook = null;
+    let chapters = [];
+    let currentChapterIndex = 0;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookId = urlParams.get('book');
+    const chapterId = urlParams.get('chapter');
+
+    async function loadBook() {
+      if (!bookId) {
+        window.location.href = '/';
+        return;
+      }
+
+      try {
+        // Load book details
+        const { data: book, error: bookError } = await supabase
+          .from('books')
+          .select('*')
+          .eq('id', bookId)
+          .single();
+
+        if (bookError) throw bookError;
+
+        currentBook = book;
+        document.title = book.title;
+        document.getElementById('bookTitle').textContent = book.title;
+        document.getElementById('bookAuthor').textContent = `by ${book.author}`;
+
+        // Load chapters
+        const { data: chaptersData, error: chaptersError } = await supabase
+          .from('chapters')
+          .select('*')
+          .eq('book_id', bookId)
+          .order('chapter_number', { ascending: true });
+
+        if (chaptersError) throw chaptersError;
+
+        chapters = chaptersData;
+
+        // Find current chapter or default to first
+        if (chapterId) {
+          currentChapterIndex = chapters.findIndex(ch => ch.id === chapterId);
+          if (currentChapterIndex === -1) currentChapterIndex = 0;
+        }
+
+        renderChapterList();
+        renderChapter();
+
+      } catch (err) {
+        console.error('Error loading book:', err);
+        document.getElementById('chapterContent').innerHTML = `
+          <div style="text-align: center; padding: 4rem; color: #d4a5ae;">
+            <h2>Error loading book</h2>
+            <p>${err.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderChapterList() {
+      const list = document.getElementById('chapterList');
+      list.innerHTML = chapters.map((ch, idx) => `
+        <div class="chapter-link ${idx === currentChapterIndex ? 'active' : ''}" onclick="goToChapter(${idx})">
+          <div class="ch-num">Chapter ${ch.chapter_number}</div>
+          <div class="ch-title">${ch.title}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderChapter() {
+      const chapter = chapters[currentChapterIndex];
+      if (!chapter) return;
+
+      document.getElementById('chapterContent').innerHTML = `
+        <h1>Chapter ${chapter.chapter_number}: ${chapter.title}</h1>
+        <div class="chapter-text">${chapter.content}</div>
+      `;
+
+      // Update URL without reload
+      const newUrl = `/reader?book=${bookId}&chapter=${chapter.id}`;
+      window.history.pushState({}, '', newUrl);
+
+      // Update nav buttons
+      document.getElementById('prevBtn').disabled = currentChapterIndex === 0;
+      document.getElementById('nextBtn').disabled = currentChapterIndex === chapters.length - 1;
+
+      // Update chapter list highlighting
+      renderChapterList();
+
+      // Scroll to top
+      window.scrollTo(0, 0);
+    }
+
+    function goToChapter(index) {
+      currentChapterIndex = index;
+      renderChapter();
+    }
+
+    function prevChapter() {
+      if (currentChapterIndex > 0) {
+        currentChapterIndex--;
+        renderChapter();
+      }
+    }
+
+    function nextChapter() {
+      if (currentChapterIndex < chapters.length - 1) {
+        currentChapterIndex++;
+        renderChapter();
+      }
+    }
+
+    // Make functions global
+    window.goToChapter = goToChapter;
+    window.prevChapter = prevChapter;
+    window.nextChapter = nextChapter;
+
+    loadBook();
+  </script>
+</body>
+</html>
