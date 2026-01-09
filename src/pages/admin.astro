@@ -1,5 +1,6 @@
 ---
-// No server-side data fetching
+const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 ---
 
 <html lang="en">
@@ -297,12 +298,10 @@
     </a>
   </nav>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
-    const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-    
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <script type="module" define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY }}>
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     let books = [];
 
@@ -325,10 +324,16 @@
 
     document.getElementById('bookForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      console.log('Form submitted!');
+      console.log('SUPABASE_URL:', SUPABASE_URL);
+      console.log('SUPABASE_ANON_KEY:', SUPABASE_ANON_KEY ? 'Present' : 'Missing');
       
       const title = document.getElementById('bookTitle').value.trim();
       const author = document.getElementById('bookAuthor').value.trim();
       const coverFile = document.getElementById('bookCover').files[0];
+
+      console.log('Book data:', { title, author, hasCover: !!coverFile });
 
       try {
         let coverImageUrl = null;
@@ -353,6 +358,7 @@
         }
 
         // Create book
+        console.log('Creating book in database...');
         const { data, error } = await supabase
           .from('books')
           .insert([{
@@ -362,6 +368,7 @@
           }])
           .select();
 
+        console.log('Insert result:', { data, error });
         if (error) throw error;
 
         showMessage('bookMessage', `Book "${title}" created successfully!`, 'success');
@@ -369,6 +376,7 @@
         document.getElementById('imagePreview').classList.remove('show');
         refreshBooks();
       } catch (err) {
+        console.error('Error caught:', err);
         showMessage('bookMessage', `Error: ${err.message}`, 'error');
       }
     });

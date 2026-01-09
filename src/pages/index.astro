@@ -1,5 +1,6 @@
 ---
-// No server-side data fetching
+const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 ---
 
 <html lang="en">
@@ -10,7 +11,12 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
     
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+    
     body {
       background: linear-gradient(135deg, #c9e4de 0%, #f7d7dc 100%);
       font-family: 'Poppins', sans-serif;
@@ -19,12 +25,17 @@
       padding-bottom: 7rem;
     }
     
-    .container { max-width: 1400px; margin: 0 auto; }
+    .container { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+    }
     
     header {
       text-align: center;
       margin-bottom: 3rem;
       animation: fadeInDown 0.6s ease;
+      max-width: 100%;
+      width: 100%;
     }
     
     @keyframes fadeInDown {
@@ -40,6 +51,7 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
       margin-bottom: 0.5rem;
+      word-wrap: break-word;
     }
     
     .subtitle {
@@ -136,17 +148,28 @@
       background: white;
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
     
     .empty-state h2, .loading-state h2 {
       font-size: 1.8rem;
-      margin-bottom: 1rem;
+      margin: 0 0 1rem 0;
       color: #87a8a4;
+      width: 100%;
+      text-align: center;
     }
     
     .empty-state p, .loading-state p {
       color: #d4a5ae;
       font-size: 1.1rem;
+      width: 100%;
+      text-align: center;
+      margin: 0;
     }
 
     .spinner {
@@ -208,8 +231,13 @@
     }
 
     @media (max-width: 768px) {
-      body { padding: 1rem; padding-bottom: 7rem; }
-      h1 { font-size: 2.2rem; }
+      body { 
+        padding: 1rem; 
+        padding-bottom: 7rem; 
+      }
+      h1 { 
+        font-size: 2.2rem; 
+      }
       .books-grid {
         grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
         gap: 1.5rem;
@@ -244,12 +272,10 @@
     </a>
   </nav>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
-    const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-    
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <script type="module" define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY }}>
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+  
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const gradients = [
       'linear-gradient(135deg, #c9e4de 0%, #f7d7dc 100%)',
@@ -296,14 +322,22 @@
           <div class="books-grid">
             ${books.map((book, index) => {
               const chapterCount = book.chapters?.length || 0;
-              const firstChapterId = book.chapters?.[0]?.id || '';
               const gradient = gradients[index % gradients.length];
               const emoji = bookEmojis[index % bookEmojis.length];
               
+              // Use cover image if available, otherwise gradient with emoji
+              const coverStyle = book.cover_image_url
+                ? `background-image: url('${book.cover_image_url}'); background-size: cover; background-position: center;`
+                : `background: ${gradient}`;
+              
+              const coverContent = book.cover_image_url
+                ? ''
+                : `<span class="book-emoji">${emoji}</span>`;
+              
               return `
                 <a href="/reader?book=${book.id}" class="book-card">
-                  <div class="book-cover" style="background: ${gradient}">
-                    <span class="book-emoji">${emoji}</span>
+                  <div class="book-cover" style="${coverStyle}">
+                    ${coverContent}
                   </div>
                   <div class="book-info">
                     <div class="book-title">${book.title}</div>
@@ -319,42 +353,7 @@
               `;
             }).join('')}
           </div>
-        `;container.innerHTML = `
-			<div class="books-grid">
-				${books.map((book, index) => {
-				const chapterCount = book.chapters?.length || 0;
-				const gradient = gradients[index % gradients.length];
-				const emoji = bookEmojis[index % bookEmojis.length];
-				
-				// Use cover image if available, otherwise gradient with emoji
-				const coverStyle = book.cover_image_url
-					? `background-image: url('${book.cover_image_url}'); background-size: cover; background-position: center;`
-					: `background: ${gradient}`;
-				
-				const coverContent = book.cover_image_url
-					? ''
-					: `<span class="book-emoji">${emoji}</span>`;
-				
-				return `
-					<a href="/reader?book=${book.id}" class="book-card">
-					<div class="book-cover" style="${coverStyle}">
-						${coverContent}
-					</div>
-					<div class="book-info">
-						<div class="book-title">${book.title}</div>
-						<div class="book-author">by ${book.author}</div>
-						<div class="book-meta">
-						<div class="meta-item">
-							<span>📄</span>
-							<span>${chapterCount} ${chapterCount === 1 ? 'chapter' : 'chapters'}</span>
-						</div>
-						</div>
-					</div>
-					</a>
-				`;
-				}).join('')}
-			</div>
-			`;
+        `;
 
       } catch (err) {
         console.error('Error loading books:', err);
