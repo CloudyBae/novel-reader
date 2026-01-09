@@ -27,7 +27,8 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     
     .container { 
       max-width: 1400px; 
-      margin: 0 auto; 
+      margin: 0 auto;
+      width: 100%;
     }
     
     header {
@@ -62,9 +63,11 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     
     .books-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 2rem;
+      grid-template-columns: repeat(auto-fill, 160px);
+      gap: 1.5rem;
       animation: fadeIn 0.8s ease;
+      width: 100%;
+      justify-content: center;
     }
     
     @keyframes fadeIn {
@@ -84,6 +87,7 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
       position: relative;
+      width: 100%;
     }
     
     .book-card:hover {
@@ -92,12 +96,14 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     }
     
     .book-cover {
-      height: 200px;
+      width: 100%;
+      aspect-ratio: 2 / 3;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 4rem;
+      font-size: 3rem;
       position: relative;
+      overflow: hidden;
     }
     
     .book-emoji {
@@ -106,41 +112,42 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     }
     
     .book-info {
-      padding: 1.5rem;
+      padding: 1rem;
       background: white;
     }
     
     .book-title {
-      font-size: 1.4rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      line-height: 1.3;
-      color: #5d7772;
-    }
+			font-size: 1rem;
+			font-weight: 700;
+			margin-bottom: 0.3rem;
+			line-height: 1.3;
+			color: #5d7772 !important;
+		}
     
     .book-author {
-      color: #d4a5ae;
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
+			color: #d4a5ae !important;
+			font-size: 0.85rem;
+			font-weight: 600;
+			margin-bottom: 0.8rem;
+		}
     
     .book-meta {
       display: flex;
-      gap: 1rem;
-      font-size: 0.9rem;
+      gap: 0.5rem;
+      font-size: 0.75rem;
       color: #87a8a4;
       font-weight: 600;
     }
     
     .meta-item {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: linear-gradient(135deg, #e8f5f3 0%, #fce9ed 100%);
-      padding: 0.4rem 0.8rem;
-      border-radius: 20px;
-    }
+			display: flex;
+			align-items: center;
+			gap: 0.3rem;
+			background: linear-gradient(135deg, #e8f5f3 0%, #fce9ed 100%);
+			padding: 0.3rem 0.6rem;
+			border-radius: 20px;
+			color: #87a8a4 !important;
+		}
     
     .empty-state, .loading-state {
       text-align: center;
@@ -239,8 +246,11 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
         font-size: 2.2rem; 
       }
       .books-grid {
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fill, 120px);
+        gap: 1rem;
+      }
+      .book-cover {
+        font-size: 2rem;
       }
     }
   </style>
@@ -319,25 +329,19 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
         countEl.textContent = `${books.length} lovely ${books.length === 1 ? 'book' : 'books'} in your collection`;
 
         container.innerHTML = `
-          <div class="books-grid">
+  				<div class="books-grid" style="display: grid; grid-template-columns: repeat(auto-fill, 160px); gap: 1.5rem; width: 100%; justify-content: center;">
             ${books.map((book, index) => {
               const chapterCount = book.chapters?.length || 0;
               const gradient = gradients[index % gradients.length];
               const emoji = bookEmojis[index % bookEmojis.length];
               
-              // Use cover image if available, otherwise gradient with emoji
-              const coverStyle = book.cover_image_url
-                ? `background-image: url('${book.cover_image_url}'); background-size: cover; background-position: center;`
-                : `background: ${gradient}`;
-              
-              const coverContent = book.cover_image_url
-                ? ''
-                : `<span class="book-emoji">${emoji}</span>`;
-              
               return `
                 <a href="/reader?book=${book.id}" class="book-card">
-                  <div class="book-cover" style="${coverStyle}">
-                    ${coverContent}
+                  <div class="book-cover" style="${book.cover_image_url ? 'padding: 0; background: #f0f0f0;' : gradient}">
+                    ${book.cover_image_url 
+                      ? `<img src="${book.cover_image_url}" alt="${book.title}" style="width: 100%; height: 100%; object-fit: cover; display: block;">` 
+                      : `<span class="book-emoji">${emoji}</span>`
+                    }
                   </div>
                   <div class="book-info">
                     <div class="book-title">${book.title}</div>

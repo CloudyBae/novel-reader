@@ -349,13 +349,13 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
           if (uploadError) throw uploadError;
 
-          // Get public URL
-          const { data: { publicUrl } } = supabase.storage
-            .from('book-covers')
-            .getPublicUrl(fileName);
+        // Get public URL
+        const { data } = supabase.storage
+          .from('book-covers')
+          .getPublicUrl(fileName);
 
-          coverImageUrl = publicUrl;
-        }
+        coverImageUrl = data.publicUrl;
+        console.log('Cover image URL:', coverImageUrl); // Debug log
 
         // Create book
         console.log('Creating book in database...');
