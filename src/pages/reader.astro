@@ -101,11 +101,15 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     }
     
     .chapter-text {
-      white-space: pre-wrap;
-      line-height: 1.8;
+      white-space: normal;
       font-size: 1.1rem;
       color: #5d7772;
       margin-bottom: 3rem;
+    }
+
+    .chapter-text p {
+      margin: 0 0 1.25rem 0;
+      line-height: 1.8;
     }
     
     .nav {
@@ -162,19 +166,6 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     
     @keyframes spin {
       to { transform: rotate(360deg); }
-    }
-
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      display: flex;
-      justify-content: space-around;
-      padding: 1rem;
-      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
-      z-index: 100;
     }
 
     .nav-item {
@@ -248,18 +239,6 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       <button id="nextBtn" onclick="nextChapter()" disabled>Next →</button>
     </div>
   </div>
-
-  <!-- Bottom Navigation -->
-  <nav class="bottom-nav">
-    <a href="/" class="nav-item">
-      <span class="nav-icon">📚</span>
-      <span class="nav-label">Library</span>
-    </a>
-    <a href="/admin" class="nav-item">
-      <span class="nav-icon">✏️</span>
-      <span class="nav-label">Add Books</span>
-    </a>
-  </nav>
 
   <script type="module" define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY }}>
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -340,23 +319,39 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       const chapter = chapters[currentChapterIndex];
       if (!chapter) return;
 
-      document.getElementById('chapterContent').innerHTML = `
-        <h1>Chapter ${chapter.chapter_number}: ${chapter.title}</h1>
-        <div class="chapter-text">${chapter.content}</div>
-      `;
+      const container = document.getElementById('chapterContent');
+      container.innerHTML = ''; // clear
 
-      // Update URL without reload
+      const h1 = document.createElement('h1');
+      h1.textContent = `Chapter ${chapter.chapter_number}: ${chapter.title}`;
+
+      const text = document.createElement('div');
+      text.className = 'chapter-text';
+
+      const normalized = (chapter.content ?? "").replace(/\r\n/g, "\n");
+
+      const paragraphs = normalized
+        .split(/\n\s*\n/)   // blank line = new paragraph
+        .map(p => p.trim())
+        .filter(Boolean);
+
+      for (const p of paragraphs) {
+        const el = document.createElement('p');
+        el.textContent = p;
+        text.appendChild(el);
+      }
+
+      container.appendChild(h1);
+      container.appendChild(text);
+
       const newUrl = `/reader?book=${bookId}&chapter=${chapter.id}`;
       window.history.pushState({}, '', newUrl);
 
-      // Update nav buttons
       document.getElementById('prevBtn').disabled = currentChapterIndex === 0;
-      document.getElementById('nextBtn').disabled = currentChapterIndex === chapters.length - 1;
+      document.getElementById('nextBtn').disabled =
+        currentChapterIndex === chapters.length - 1;
 
-      // Update chapter list highlighting
       renderChapterList();
-
-      // Scroll to top
       window.scrollTo(0, 0);
     }
 
