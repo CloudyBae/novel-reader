@@ -319,7 +319,42 @@
               `;
             }).join('')}
           </div>
-        `;
+        `;container.innerHTML = `
+			<div class="books-grid">
+				${books.map((book, index) => {
+				const chapterCount = book.chapters?.length || 0;
+				const gradient = gradients[index % gradients.length];
+				const emoji = bookEmojis[index % bookEmojis.length];
+				
+				// Use cover image if available, otherwise gradient with emoji
+				const coverStyle = book.cover_image_url
+					? `background-image: url('${book.cover_image_url}'); background-size: cover; background-position: center;`
+					: `background: ${gradient}`;
+				
+				const coverContent = book.cover_image_url
+					? ''
+					: `<span class="book-emoji">${emoji}</span>`;
+				
+				return `
+					<a href="/reader?book=${book.id}" class="book-card">
+					<div class="book-cover" style="${coverStyle}">
+						${coverContent}
+					</div>
+					<div class="book-info">
+						<div class="book-title">${book.title}</div>
+						<div class="book-author">by ${book.author}</div>
+						<div class="book-meta">
+						<div class="meta-item">
+							<span>📄</span>
+							<span>${chapterCount} ${chapterCount === 1 ? 'chapter' : 'chapters'}</span>
+						</div>
+						</div>
+					</div>
+					</a>
+				`;
+				}).join('')}
+			</div>
+			`;
 
       } catch (err) {
         console.error('Error loading books:', err);

@@ -1,5 +1,5 @@
 ---
-// This page is client-side only for form handling
+// No server-side data fetching
 ---
 
 <html lang="en">
@@ -16,6 +16,7 @@
       font-family: 'Poppins', sans-serif;
       color: #5d7772;
       padding: 2rem;
+      padding-bottom: 7rem;
     }
     .container { max-width: 800px; margin: 0 auto; }
     
@@ -59,6 +60,10 @@
       color: #5d7772;
       font-family: inherit;
       font-size: 1rem;
+    }
+    
+    input[type="file"] {
+      padding: 0.5rem;
     }
     
     textarea {
@@ -130,11 +135,85 @@
       margin-bottom: 0.5rem;
       border-radius: 12px;
       cursor: pointer;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
     }
     
     .book-item:hover { opacity: 0.8; }
+    
+    .book-item-cover {
+      width: 60px;
+      height: 80px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #d4ebe6;
+    }
+    
+    .book-item-info {
+      flex: 1;
+    }
+    
     .book-item .title { font-weight: 600; color: #5d7772; }
     .book-item .meta { color: #87a8a4; font-size: 0.9rem; margin-top: 0.25rem; }
+
+    .image-preview {
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .image-preview img {
+      max-width: 200px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .image-preview.show {
+      display: block;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 1rem;
+      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #87a8a4;
+      transition: all 0.3s ease;
+      padding: 0.5rem 2rem;
+      border-radius: 12px;
+    }
+
+    .nav-item:hover {
+      background: linear-gradient(135deg, #e8f5f3 0%, #fce9ed 100%);
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, #87a8a4 0%, #e8b4bc 100%);
+      color: white;
+    }
+
+    .nav-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .nav-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -156,6 +235,13 @@
         <div class="form-group">
           <label for="bookAuthor">Author</label>
           <input type="text" id="bookAuthor" required placeholder="Guiltythree">
+        </div>
+        <div class="form-group">
+          <label for="bookCover">Book Cover (Optional)</label>
+          <input type="file" id="bookCover" accept="image/*">
+          <div id="imagePreview" class="image-preview">
+            <img id="previewImg" src="" alt="Preview">
+          </div>
         </div>
         <button type="submit">Create Book</button>
       </form>
@@ -199,6 +285,18 @@
     </div>
   </div>
 
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="/" class="nav-item">
+      <span class="nav-icon">📚</span>
+      <span class="nav-label">Library</span>
+    </a>
+    <a href="/admin" class="nav-item active">
+      <span class="nav-icon">✏️</span>
+      <span class="nav-label">Add Books</span>
+    </a>
+  </nav>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
@@ -208,26 +306,67 @@
     
     let books = [];
 
+    // Image preview
+    document.getElementById('bookCover').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('previewImg').src = e.target.result;
+          document.getElementById('imagePreview').classList.add('show');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        document.getElementById('imagePreview').classList.remove('show');
+      }
+    });
+
     window.addEventListener('DOMContentLoaded', refreshBooks);
 
     document.getElementById('bookForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const bookData = {
-        title: document.getElementById('bookTitle').value.trim(),
-        author: document.getElementById('bookAuthor').value.trim()
-      };
+      const title = document.getElementById('bookTitle').value.trim();
+      const author = document.getElementById('bookAuthor').value.trim();
+      const coverFile = document.getElementById('bookCover').files[0];
 
       try {
+        let coverImageUrl = null;
+
+        // Upload image if provided
+        if (coverFile) {
+          const fileExt = coverFile.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('book-covers')
+            .upload(fileName, coverFile);
+
+          if (uploadError) throw uploadError;
+
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('book-covers')
+            .getPublicUrl(fileName);
+
+          coverImageUrl = publicUrl;
+        }
+
+        // Create book
         const { data, error } = await supabase
           .from('books')
-          .insert([bookData])
+          .insert([{
+            title,
+            author,
+            cover_image_url: coverImageUrl
+          }])
           .select();
 
         if (error) throw error;
 
-        showMessage('bookMessage', `Book "${bookData.title}" created successfully!`, 'success');
+        showMessage('bookMessage', `Book "${title}" created successfully!`, 'success');
         document.getElementById('bookForm').reset();
+        document.getElementById('imagePreview').classList.remove('show');
         refreshBooks();
       } catch (err) {
         showMessage('bookMessage', `Error: ${err.message}`, 'error');
@@ -295,10 +434,17 @@
         } else {
           list.innerHTML = books.map(book => {
             const chapterCount = book.chapters?.[0]?.count || 0;
+            const coverImg = book.cover_image_url 
+              ? `<img src="${book.cover_image_url}" class="book-item-cover" alt="${book.title}">`
+              : `<div class="book-item-cover" style="display: flex; align-items: center; justify-content: center; font-size: 2rem;">📖</div>`;
+            
             return `
               <div class="book-item">
-                <div class="title">${book.title}</div>
-                <div class="meta">${book.author} • ${chapterCount} chapters</div>
+                ${coverImg}
+                <div class="book-item-info">
+                  <div class="title">${book.title}</div>
+                  <div class="meta">${book.author} • ${chapterCount} chapters</div>
+                </div>
               </div>
             `;
           }).join('');
