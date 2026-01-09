@@ -257,7 +257,9 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
         <select id="selectBook">
           <option value="">-- Select a book --</option>
         </select>
-        <button onclick="refreshBooks()" style="margin-top: 0.5rem; padding: 0.5rem 1rem;">Refresh Books</button>
+        <button id="refreshBooksBtn" type="button">
+          Refresh Books
+        </button>
       </div>
 
       <form id="chapterForm">
@@ -320,7 +322,13 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       }
     });
 
-    window.addEventListener('DOMContentLoaded', refreshBooks);
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshBooks();
+      document
+        .getElementById('refreshBooksBtn')
+        .addEventListener('click', refreshBooks);
+    });
+
 
     document.getElementById('bookForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -356,7 +364,7 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
         coverImageUrl = data.publicUrl;
         console.log('Cover image URL:', coverImageUrl); // Debug log
-
+      }
         // Create book
         console.log('Creating book in database...');
         const { data, error } = await supabase
@@ -423,17 +431,24 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
           `)
           .order('created_at', { ascending: false });
 
+        console.log('Books loaded:', booksData); // ADD THIS
+        console.log('Error:', booksError); // ADD THIS
+
         if (booksError) throw booksError;
         
         books = booksData;
         
         const select = document.getElementById('selectBook');
+        console.log('Select element:', select); // ADD THIS
+        console.log('Number of books:', books.length); // ADD THIS
+        
         select.innerHTML = '<option value="">-- Select a book --</option>';
         books.forEach(book => {
           const opt = document.createElement('option');
           opt.value = book.id;
           opt.textContent = book.title;
           select.appendChild(opt);
+          console.log('Added book option:', book.title); // ADD THIS
         });
 
         const list = document.getElementById('booksList');
