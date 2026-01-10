@@ -12,13 +12,49 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   <style is:global>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
+    :root {
+      --bg-gradient-start: #c9e4de;
+      --bg-gradient-end: #f7d7dc;
+      --bg-primary: white;
+      --text-primary: #5d7772;
+      --text-secondary: #d4a5ae;
+      --text-accent: #87a8a4;
+      --card-bg: white;
+      --card-shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="dark"] {
+      --bg-gradient-start: #1a2e2a;
+      --bg-gradient-end: #2d1f24;
+      --bg-primary: #1e1e1e;
+      --text-primary: #b8d8d2;
+      --text-secondary: #e8b4bc;
+      --text-accent: #87a8a4;
+      --card-bg: #2a2a2a;
+      --card-shadow: rgba(0, 0, 0, 0.3);
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: linear-gradient(135deg, #c9e4de 0%, #f7d7dc 100%);
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
       font-family: 'Poppins', sans-serif;
-      color: #5d7772;
-      margin: 0;
+      color: var(--text-primary);
+      padding: 2rem;
+      padding-bottom: 7rem;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    h1 { 
+      margin-bottom: 2rem; 
+      color: var(--text-accent);
+      text-align: center;
+    }
+
+    h2 {
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      color: var(--text-accent);
     }
 
     /* Desktop sidebar */
@@ -28,20 +64,21 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       top: 0;
       width: 280px;
       height: 100vh;
-      background: white;
+      background: var(--card-bg);
       padding: 2rem 1rem;
       overflow-y: auto;
-      box-shadow: 5px 0 20px rgba(0, 0, 0, 0.05);
+      box-shadow: 5px 0 20px var(--card-shadow);
       z-index: 50;
+      transition: background 0.3s ease, transform 0.25s ease;
     }
 
     .sidebar-header { margin-bottom: 2rem; }
 
     .back-link {
-      color: #87a8a4;
+      display: inline-block;
+      margin-bottom: 2rem;
+      color: var(--text-accent);
       text-decoration: none;
-      display: block;
-      margin-bottom: 1rem;
       font-weight: 600;
     }
     .back-link:hover { text-decoration: underline; }
@@ -64,12 +101,12 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       padding: 0.9rem 0.9rem;
       margin: 0.75rem 0;
       text-decoration: none;
-      color: #5d7772;
+      color: var(--text-primary);
       border-radius: 14px;
-      background: #f8faf9;
-      border: 1px solid #e8f5f3;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(135, 168, 164, 0.2);
       cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      transition: all 0.3s ease;
       position: relative;
       padding-left: 1.15rem;
     }
@@ -82,7 +119,7 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       bottom: 0.9rem;
       width: 4px;
       border-radius: 999px;
-      background: #d4ebe6;
+      background: rgba(135, 168, 164, 0.3);
     }
 
     .chapter-link.active::before {
@@ -90,16 +127,16 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     }
 
     .chapter-link:hover {
-      background: linear-gradient(135deg, #e8f5f3 0%, #fce9ed 100%);
+      background: rgba(135, 168, 164, 0.15);
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
     }
 
     .chapter-link.active {
-      background: linear-gradient(135deg, #87a8a4 0%, #e8b4bc 100%);
+      background: rgba(135, 168, 164, 0.4);
       color: white;
-      border-color: transparent;
-      box-shadow: 0 10px 22px rgba(135, 168, 164, 0.25);
+      border-color: rgba(135, 168, 164, 0.5);
+      box-shadow: 0 4px 12px rgba(135, 168, 164, 0.2);
     }
 
     .ch-num {
@@ -127,9 +164,10 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       margin-left: 300px;
       padding: 3rem;
       max-width: 900px;
-      background: white;
+      background: var(--card-bg);
       min-height: 100vh;
-      box-shadow: -5px 0 20px rgba(0, 0, 0, 0.05);
+      box-shadow: -5px 0 20px var(--card-shadow);
+      transition: background 0.3s ease;
     }
 
     .content h1 {
@@ -172,18 +210,20 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     }
 
     .nav button:not(:disabled) {
-      background: linear-gradient(135deg, #87a8a4 0%, #e8b4bc 100%);
-      color: white;
+      background: rgba(135, 168, 164, 0.5);
+      color: rgba(255, 255, 255, 0.9);
     }
 
     .nav button:not(:disabled):hover {
+      background: rgba(135, 168, 164, 0.7);
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(135, 168, 164, 0.3);
+      box-shadow: 0 5px 15px rgba(135, 168, 164, 0.2);
     }
 
     .nav button:disabled {
-      background: #e8f5f3;
-      color: #b8d8d2;
+      background: rgba(135, 168, 164, 0.1);
+      color: var(--text-accent);
+      opacity: 0.5;
       cursor: not-allowed;
     }
 
@@ -227,9 +267,9 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
         top: 0;
         left: 0;
         z-index: 200;
-
+        background: var(--card-bg);
         transform: translateX(-105%);
-        transition: transform 0.25s ease;
+        transition: transform 0.25s ease, background 0.3s ease;
       }
 
       .sidebar.open {
@@ -260,7 +300,12 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   <!-- Sidebar / Drawer -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <a href="/" class="back-link">← Library</a>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <a href="/" class="back-link">← Library</a>
+        <button onclick="toggleDarkMode()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 0.5rem;">
+          <span id="themeIcon">🌙</span>
+        </button>
+      </div>
       <div class="book-title-sidebar" id="bookTitle">Loading...</div>
       <div class="book-author-sidebar" id="bookAuthor"></div>
     </div>
@@ -289,6 +334,33 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       <button id="nextBtn" onclick="nextChapter()" disabled>Next →</button>
     </div>
   </div>
+
+  <script>
+    // Dark mode toggle
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      const icon = document.getElementById('themeIcon');
+      
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      icon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+    }
+
+    // Make it globally accessible
+    window.toggleDarkMode = toggleDarkMode;
+
+    // Load saved theme on page load
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      const icon = document.getElementById('themeIcon');
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      if (icon) {
+        icon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+      }
+    })();
+  </script>
 
   <script type="module" define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY }}>
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';

@@ -10,33 +10,56 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   <title>Novel Admin</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+    :root {
+      --bg-gradient-start: #c9e4de;
+      --bg-gradient-end: #f7d7dc;
+      --bg-primary: white;
+      --text-primary: #5d7772;
+      --text-secondary: #d4a5ae;
+      --text-accent: #87a8a4;
+      --card-bg: white;
+      --card-shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="dark"] {
+      --bg-gradient-start: #1a2e2a;
+      --bg-gradient-end: #2d1f24;
+      --bg-primary: #1e1e1e;
+      --text-primary: #b8d8d2;
+      --text-secondary: #e8b4bc;
+      --text-accent: #87a8a4;
+      --card-bg: #2a2a2a;
+      --card-shadow: rgba(0, 0, 0, 0.3);
+    }
     
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: linear-gradient(135deg, #c9e4de 0%, #f7d7dc 100%);
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
       font-family: 'Poppins', sans-serif;
-      color: #5d7772;
+      color: var(--text-primary);
       padding: 2rem;
       padding-bottom: 7rem;
+      transition: background 0.3s ease, color 0.3s ease;
     }
     .container { max-width: 800px; margin: 0 auto; }
     
     h1 { 
       margin-bottom: 2rem; 
-      color: #87a8a4;
+      color: var(--text-accent);
       text-align: center;
     }
     
     h2 {
       margin-top: 2rem;
       margin-bottom: 1rem;
-      color: #87a8a4;
+      color: var(--text-accent);
     }
     
     .back-link {
       display: inline-block;
       margin-bottom: 2rem;
-      color: #87a8a4;
+      color: var(--text-accent);
       text-decoration: none;
       font-weight: 600;
     }
@@ -48,17 +71,17 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     label {
       display: block;
       margin-bottom: 0.5rem;
-      color: #5d7772;
+      color: var(--text-primary);
       font-weight: 600;
     }
     
     input, textarea, select {
       width: 100%;
       padding: 0.75rem;
-      background: white;
-      border: 2px solid #d4ebe6;
+      background: var(--card-bg);
+      border: 2px solid var(--text-accent);
       border-radius: 12px;
-      color: #5d7772;
+      color: var(--text-primary);
       font-family: inherit;
       font-size: 1rem;
     }
@@ -102,11 +125,12 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     }
     
     .section {
-      background: white;
+      background: var(--card-bg);
       padding: 2rem;
       border-radius: 20px;
       margin-bottom: 2rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 30px var(--card-shadow);
+      transition: background 0.3s ease;
     }
     
     .message {
@@ -155,8 +179,16 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       flex: 1;
     }
     
-    .book-item .title { font-weight: 600; color: #5d7772; }
-    .book-item .meta { color: #87a8a4; font-size: 0.9rem; margin-top: 0.25rem; }
+    .book-item .title { 
+      font-weight: 600; 
+      color: var(--text-primary); 
+    }
+
+    .book-item .meta { 
+      color: var(--text-accent); 
+      font-size: 0.9rem; 
+      margin-top: 0.25rem; 
+    }
 
     .image-preview {
       margin-top: 1rem;
@@ -178,12 +210,13 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       bottom: 0;
       left: 0;
       right: 0;
-      background: white;
+      background: var(--card-bg);
       display: flex;
       justify-content: space-around;
       padding: 1rem;
-      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 -5px 20px var(--card-shadow);
       z-index: 100;
+      transition: background 0.3s ease;
     }
 
     .nav-item {
@@ -191,7 +224,7 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
       flex-direction: column;
       align-items: center;
       text-decoration: none;
-      color: #87a8a4;
+      color: var(--text-accent);
       transition: all 0.3s ease;
       padding: 0.5rem 2rem;
       border-radius: 12px;
@@ -290,15 +323,46 @@ const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
-    <a href="/" class="nav-item">
+    <a href="/" class="nav-item active">
       <span class="nav-icon">📚</span>
       <span class="nav-label">Library</span>
     </a>
-    <a href="/admin" class="nav-item active">
+    <button onclick="toggleDarkMode()" class="nav-item" style="border: none; background: none;">
+      <span class="nav-icon" id="themeIcon">🌙</span>
+      <span class="nav-label">Theme</span>
+    </button>
+    <a href="/admin" class="nav-item">
       <span class="nav-icon">✏️</span>
       <span class="nav-label">Add Books</span>
     </a>
   </nav>
+
+  <script>
+    // Dark mode toggle - defined first so onclick can find it
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      const icon = document.getElementById('themeIcon');
+      
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      icon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+    }
+
+    // Make it globally accessible
+    window.toggleDarkMode = toggleDarkMode;
+
+    // Load saved theme on page load
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      const icon = document.getElementById('themeIcon');
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      if (icon) {
+        icon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+      }
+    })();
+  </script>
 
   <script type="module" define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY }}>
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
